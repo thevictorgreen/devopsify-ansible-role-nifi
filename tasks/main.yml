@@ -1,6 +1,33 @@
 ---
-# tasks file for Apache NiFi
+# tasks file for roles/nifi
 - name: Update Repositories
   become: yes
   apt:
     update_cache: yes
+
+- name: Create Nifi automation directories
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - '/root/.nifi_automate'
+
+- name: Upload nifi_init.sh File
+  become: yes
+  copy:
+    src: nifi_init.sh
+    dest: /root/.nifi_automate/nifi_init.sh
+
+- name: Change permissions on nifi_init.sh
+  become: yes
+  file:
+    path: /root/.nifi_automate/nifi_init.sh
+    mode: "u+rwx"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Run Nifi Initialization script
+  become: yes
+  command: /root/.nifi_automate/nifi_init.sh
+  args:
+    executable: /bin/bash
